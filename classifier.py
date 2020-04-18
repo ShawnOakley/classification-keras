@@ -1,4 +1,4 @@
-# import relevant libraries
+# https://app.pluralsight.com/guides/classification-keras
 
 # Import required libraries
 import pandas as pd
