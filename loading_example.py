@@ -40,7 +40,5 @@ print('loaded model from disk')
 
 loaded_model.compile(optimizer='sgd', loss='categorical_crossentropy', metrics=['accuracy'])
 
-def one_hot_encoder(array):
-    unique_values, indices = np.unique(array, return_inverse=True)
-    one_hot_encoded_data = np_utils.to_categorical(indices, len(unique_values))
-    return one_hot_encoded_data
+loss, accuracy = loaded_model.evaluate(test_data_X, one_test_data_y, verbose=0)
+
