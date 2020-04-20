@@ -131,3 +131,44 @@ model.fit([encoder_input_data, decoder_input_data], decoder_target_data,
             epochs=epochs,
             validation_split=0.2,
             callbacks=[TensorBoard(log_dir='/tmp/autoencoder').checkpoint])
+
+# decoder model will be a separate model, unlike in training,
+# where we use one model for the encoder-decoder layers
+
+decoder_state_input_h = Input(shape=(latent_dimension,))
+decoder_state_input_c = Input(shape=(latent_dimension,))
+decoder_state_inputs = (decoder_state_input_h, decoder_state_input_c)
+
+#  Feed in last internal state of the decoder
+decoder_outputs, state_h, state_c = decoder_ltsm(
+    decoder_inputs, initial_state=decoder_state_inputs)
+
+decoder_states = [state_h, state_c]
+
+decoder_outputs = decoder_dense(decoder_outputs)
+
+# Separate model for decoder
+decoder_model = Model(
+    # Input: Previous character predicted by decoder + encoder state 
+    [decoder_inputs] + decoder_state_inputs,
+    # Outpit: Predicted output + state to be fed into next call of decoder
+    [decoder_outputs] + decoder_states)
+
+def decode_sequence(input_seq):
+    statesValue = encoder_model.predict(input_seq)
+    target_seq = np.zeros((1,1, num_decoder_tokens))
+    target_seq[0,0, target_token_index['\t']] = 1
+
+    stop_condition = False
+    decoded_sentence  = ''
+
+    while not stop_condition:
+        output_tokens, h, c = decoder_model.predict(
+            [target_seq] + states_value
+        )
+        sampled_token_index = np.argmax(output_tokens[0,-1,:])
+
+for seq_index in range(100):
+    input_seq = encoder_input_data[seq_index: seq_index+1]
+    decoded_sentence = decode_sequence(input_seq)
+
